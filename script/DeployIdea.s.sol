@@ -46,8 +46,8 @@ contract DeployLiskSepolia is Script {
         
         // Step 5: Deploy MarketPlace
         console.log("");
-        console.log("Step 7: Deploying OptimizedIdeaMarketplace...");
-        OptimizedIdeaMarketplace marketplace = new OptimizedIdeaMarketplace(
+        console.log("Step 7: Deploying MarketPlace...");
+        MarketPlace marketplace = new MarketPlace(
             address(superheroNFT),
             address(ideaRegistry),
             address(usdc),

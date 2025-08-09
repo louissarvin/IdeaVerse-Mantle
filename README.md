@@ -1,66 +1,75 @@
-## Foundry
+# Idea Marketplace - Superhero NFT Platform
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+A decentralized marketplace where users create superhero identities as Soulbound Tokens (SBT) and trade encrypted ideas as NFTs.
 
-Foundry consists of:
+## 🛠️ Contract Architecture
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+### IdeaNFT.sol
+- **Purpose:** Core superhero identities and idea NFTs
+- **Token Types:** 
+  - Superhero SBT: IDs 100000+
+  - Idea NFTs: IDs 0+
+- **Key Functions:**
+  - `createSuperhero()` - Mint superhero SBT
+  - `createIdea()` - Mint encrypted idea NFT
+  - `markIdeaPurchased()` - Update purchase status
+  - `rateSuperhero()` - Reputation system
 
-## Documentation
+### MarketPlace.sol  
+- **Purpose:** Trading platform for idea NFTs
+- **Payment:** MockUSDC tokens
+- **Key Functions:**
+  - `buyIdea()` - Purchase and unlock ideas
+  - `calculateFees()` - 2.5% marketplace fee
+  - Purchase tracking and analytics
 
-https://book.getfoundry.sh/
+### MockUSDC.sol
+- **Purpose:** Test token for payments
+- **Standard:** ERC20 compatible
 
-## Usage
+---
 
-### Build
+## 🚀 Deployment Steps
 
-```shell
-$ forge build
+### 1. Deploy Contracts Mantle Sepolia Testnet
+```bash
+# Deploy in order:
+forge script script/DeployIdea.s.sol --rpc-url <mantle_sepolia_rpc_url> --broadcast
 ```
 
-### Test
-
-```shell
-$ forge test
+### 2. Configure Marketplace Authorization
+```solidity
+// Authorize marketplace to mark ideas as purchased
+ideaNFT.authorizeMarketplace(marketplaceAddress);
 ```
 
-### Format
+### 3. Frontend Integration
+- Implement AES-256 encryption/decryption
+- IPFS integration for encrypted content
+- Web3 wallet connection
+- Marketplace UI with blurred previews
 
-```shell
-$ forge fmt
-```
+### 4. Backend Services
+- Secure decryption key management
+- Purchase verification
+- API endpoints for key access
 
-### Gas Snapshots
-
-```shell
-$ forge snapshot
-```
-
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
+---
 
 ### Help
 
 ```shell
-$ forge --help
-$ anvil --help
-$ cast --help
+forge --help
+anvil --help
+cast --help
 ```
+
+---
+
+## 🤝 Contributing
+
+This marketplace enables decentralized idea trading with proper encryption and reputation systems. The modular design allows for future enhancements while maintaining security and user experience.
+
+---
+
+Please refer to the [Foundry Book](https://book.getfoundry.sh/) for more information.
