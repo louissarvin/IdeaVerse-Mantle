@@ -61,7 +61,6 @@ contract DeployLiskSepolia is Script {
         
         // Authorize marketplace contracts
         ideaRegistry.authorizeMarketplace(address(marketplace));
-        ideaNFT.setMarketplaceAuth(address(marketplace), true);
         console.log("Authorized marketplace contracts");
         
         // Mint test USDC tokens to deployer

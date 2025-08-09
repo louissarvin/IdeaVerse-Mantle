@@ -73,6 +73,11 @@ ideaNFT.authorizeMarketplace(marketplaceAddress);
 
 ---
 
+### Verify Contract
+```
+forge verify-contract <the contract address> --chain-id 5003 --etherscan-api-key <your etherscan api key> --rpc-url https://rpc.sepolia.mantle.xyz <the file path of contract>
+```
+
 ### Help
 
 ```shell
