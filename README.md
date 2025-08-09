@@ -29,6 +29,23 @@ A decentralized marketplace where users create superhero identities as Soulbound
 
 ---
 
+## Installing Project
+
+### Clone this repository
+```
+git clone <project repo>
+```
+
+### Create your ENV
+```
+cp .env .env.example
+```
+
+### Forge Install
+```
+forge install
+```
+
 ## 🚀 Deployment Steps
 
 ### 1. Deploy Contracts Mantle Sepolia Testnet
