@@ -35,10 +35,12 @@ const MarketplacePage = () => {
       return !idea.isLocked && !idea.isSold && !idea.isOwned;
     }
     
+    // TEMPORARY: Show own ideas for development/testing
+    // TODO: Remove this in production
     // Filter out ideas created by current user (creator address matches wallet address)
-    if (idea.creator && idea.creator.toLowerCase() === address.toLowerCase()) {
-      return false;
-    }
+    // if (idea.creator && idea.creator.toLowerCase() === address.toLowerCase()) {
+    //   return false;
+    // }
     
     // Filter out ideas already purchased by current user
     if (idea.isOwned) {
@@ -61,6 +63,14 @@ const MarketplacePage = () => {
 
   // Debug logging for filtering stats
   useEffect(() => {
+    console.log('🔍 Marketplace Debug Info:');
+    console.log('  - Total ideas loaded:', ideas.length);
+    console.log('  - Filtered ideas:', filteredIdeas.length);
+    console.log('  - Display ideas:', displayIdeas.length);
+    console.log('  - Is connected:', isConnected);
+    console.log('  - Current address:', address);
+    console.log('  - Ideas data:', ideas);
+    
     if (isConnected && address && ideas.length > 0) {
       const ownCreations = ideas.filter(idea => idea.creator?.toLowerCase() === address.toLowerCase()).length;
       const ownedIdeas = ideas.filter(idea => idea.isOwned).length;
@@ -68,6 +78,11 @@ const MarketplacePage = () => {
       const soldIdeas = ideas.filter(idea => idea.isSold).length;
       const availableIdeas = displayIdeas.length;
       
+      console.log('  - Own creations:', ownCreations);
+      console.log('  - Owned ideas:', ownedIdeas);
+      console.log('  - Locked ideas:', lockedIdeas);
+      console.log('  - Sold ideas:', soldIdeas);
+      console.log('  - Available for purchase:', availableIdeas);
     }
   }, [ideas, displayIdeas, isConnected, address]);
 
@@ -252,7 +267,7 @@ const MarketplacePage = () => {
                               idea.avatar
                             )}
                           </div>
-                          <span className="font-pixel text-pixel-xs font-bold text-gray-700 uppercase tracking-wider truncate">{idea.creator}</span>
+                          <span className="font-pixel text-pixel-xs font-bold text-gray-700 uppercase tracking-wider truncate">{idea.creatorName || idea.creator}</span>
                         </div>
 
                         <div className="flex items-center justify-between mb-2 p-1 bg-gray-50 border border-gray-300">
@@ -322,7 +337,7 @@ const MarketplacePage = () => {
                                   {idea.description}
                                 </p>
                                 <div className="flex items-center space-x-4 text-pixel-xs text-gray-500">
-                                  <span className="font-pixel font-bold uppercase tracking-wider">by {idea.creator}</span>
+                                  <span className="font-pixel font-bold uppercase tracking-wider">by {idea.creatorName || idea.creator}</span>
                                   <span className="font-orbitron uppercase tracking-wide">{idea.createdAt}</span>
                                   <div className="px-2 py-1 bg-sunset-coral/20 border border-sunset-coral font-pixel font-bold uppercase tracking-wider">
                                     {idea.category}

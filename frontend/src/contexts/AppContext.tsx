@@ -49,9 +49,11 @@ interface BuilderRating {
 
 interface Idea {
   id: number;
+  ideaId?: number; // Blockchain idea ID for smart contract calls
   title: string;
   description: string;
   creator: string;
+  creatorName?: string; // Superhero name for display
   avatar: string;
   price: string;
   likes: number;
@@ -846,75 +848,174 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     // Placeholder for refresh functionality
   };
 
+  const getSuperheroNameByAddress = (address: string): string => {
+    const superhero = builders.find(builder => 
+      builder.address?.toLowerCase() === address.toLowerCase()
+    );
+    return superhero?.name || address;
+  };
+
   const refreshIdeas = async (): Promise<void> => {
     try {
       setIsLoading(true);
       setError(null);
       
-      // Load ideas from backend API
-      const ideasResponse = await fetch('http://localhost:3002/ideas?page=1&limit=50&available=false');
+      // Load superheroes first to get name mappings
+      await loadBuilders();
+      
+      // Load ideas directly from Ponder GraphQL
+      const query = `
+        query GetIdeas {
+          ideas(
+            limit: 50
+            orderBy: "createdAt"
+            orderDirection: "desc"
+          ) {
+            items {
+              id
+              ideaId
+              creator
+              title
+              categories
+              ipfsHash
+              price
+              ratingTotal
+              numRaters
+              isPurchased
+              createdAt
+              transactionHash
+              blockNumber
+            }
+          }
+        }
+      `;
+      
+      const ideasResponse = await fetch('http://localhost:3002/graphql', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query })
+      });
+      
+      if (!ideasResponse.ok) {
+        throw new Error(`GraphQL request failed: ${ideasResponse.status}`);
+      }
+      
       const ideasResult = await ideasResponse.json();
       
-      if (ideasResult.success && ideasResult.data) {
+      console.log('💡 Ideas GraphQL result:', ideasResult);
+      
+      if (ideasResult.data?.ideas?.items) {
         
-        // Convert API ideas to local format for display
-        const apiIdeas = ideasResult.data.map((apiIdea: any, index: number) => {
+        // Convert GraphQL ideas to local format for display
+        const apiIdeas = ideasResult.data.ideas.items.map((apiIdea: any, index: number) => {
           // Parse hex-encoded title if needed
           const title = apiIdea.title?.startsWith('0x') ? 
             parseHexString(apiIdea.title) : 
             apiIdea.title;
           
+          // Get superhero name for creator
+          const creatorName = getSuperheroNameByAddress(apiIdea.creator);
+          
           return {
             id: parseInt(apiIdea.ideaId || apiIdea.idea_id) || (1000 + index + Date.now() % 1000),
+            ideaId: parseInt(apiIdea.ideaId), // Blockchain idea ID for smart contract calls
             backendId: parseInt(apiIdea.ideaId || apiIdea.idea_id), // Store original backend ID for API calls
             title: title || 'Untitled Idea',
             description: apiIdea.description || 'No description provided',
-            creator: apiIdea.creatorName || apiIdea.creator || 'Unknown Creator',
+            creator: apiIdea.creator || 'Unknown Creator', // Keep wallet address for filtering
+            creatorName: creatorName, // Add superhero name for display
             avatar: '🦸‍♂️', // Default avatar - we'll improve this with actual superhero avatars
-            price: typeof apiIdea.price === 'string' ? `${apiIdea.price} USDC` : `${(apiIdea.price / 1000000).toFixed(2)} USDC`,
+            price: `${(parseInt(apiIdea.price || '0') / 1000000).toFixed(2)} USDC`, // Convert from micro-USDC to USDC
             likes: parseInt(apiIdea.ratingTotal || apiIdea.rating_total) || 0,
             views: Math.floor(Math.random() * 1000) + 100,
-            isLocked: apiIdea.isPurchased || apiIdea.is_purchased,
-            category: apiIdea.categories?.[0] || apiIdea.category?.[0] || 'General',
-            tags: apiIdea.categories || apiIdea.category || ['General'],
-            categories: apiIdea.categories || apiIdea.category || ['General'],
-            createdAt: apiIdea.createdAt ? new Date(apiIdea.createdAt).toLocaleDateString() : 'Recently',
+            isLocked: apiIdea.isPurchased || apiIdea.is_purchased || false,
+            category: apiIdea.categories?.[0] || apiIdea.category?.[0] || 'DeFi',
+            tags: apiIdea.categories && apiIdea.categories.length > 0 ? apiIdea.categories : ['DeFi', 'Blockchain'],
+            categories: apiIdea.categories && apiIdea.categories.length > 0 ? apiIdea.categories : ['DeFi'],
+            createdAt: apiIdea.createdAt ? new Date(parseInt(apiIdea.createdAt) * 1000).toLocaleDateString() : 'Recently',
             featured: !(apiIdea.isPurchased || apiIdea.is_purchased),
             pixelColor: 'from-blue-400 to-purple-500',
-            isSold: apiIdea.isPurchased || apiIdea.is_purchased,
+            isSold: apiIdea.isPurchased || apiIdea.is_purchased || false,
             isLiked: false,
             isOwned: false
           };
         });
         
         setIdeas(apiIdeas);
+        console.log('✅ Ideas successfully loaded:', apiIdeas.length, 'ideas');
+        console.log('📋 Ideas data:', apiIdeas);
         
       } else {
+        console.log('❌ No ideas data received from GraphQL');
         setIdeas([]); // Clear ideas if API returns empty
       }
     } catch (error) {
+      console.error('❌ Error fetching ideas:', error);
       
-      // Use mock ideas when backend is unavailable
+      // Use real-like mock ideas when backend is unavailable
       const mockIdeas = [
         {
           id: 1,
-          backendId: 1,
-          title: 'Decentralized Social Network',
-          description: 'A revolutionary social platform built on blockchain technology that gives users full control over their data.',
-          creator: 'Alex Chen',
-          avatar: '🚀',
-          price: '50.00 USDC',
-          likes: 234,
-          views: 1205,
+          backendId: 0,
+          title: 'How to Win Mantle',
+          description: 'A comprehensive guide to winning on the Mantle blockchain network with advanced strategies and techniques.',
+          creator: '0x564323aE0D8473103F3763814c5121Ca9e48004B',
+          avatar: '🦸‍♂️',
+          price: '99.98 USDC',
+          likes: 15,
+          views: 234,
           isLocked: false,
-          isSold: false,
-          isOwned: false,
-          category: 'Social',
-          tags: ['Social', 'Blockchain', 'Privacy'],
-          categories: ['Social', 'Blockchain'],
-          createdAt: 'Dec 15',
+          category: 'DeFi',
+          tags: ['DeFi', 'Blockchain', 'Strategy'],
+          categories: ['DeFi'],
+          createdAt: 'Today',
           featured: true,
-          pixelColor: 'from-blue-400 to-purple-600',
+          pixelColor: 'from-blue-400 to-purple-500',
+          isSold: false,
+          isLiked: false,
+          isOwned: false
+        },
+        {
+          id: 2,
+          backendId: 1,
+          title: 'NFT Gaming Revolution',
+          description: 'Innovative gaming mechanics using NFTs for true digital ownership and player-driven economies.',
+          creator: '0x742d35cc6bf5aebc4148ff6e88f3b8c3e1e8c9a2',
+          avatar: '🎮',
+          price: '75.50 USDC',
+          likes: 28,
+          views: 456,
+          isLocked: false,
+          category: 'Gaming',
+          tags: ['Gaming', 'NFT', 'Economy'],
+          categories: ['Gaming'],
+          createdAt: 'Yesterday',
+          featured: true,
+          pixelColor: 'from-green-400 to-blue-500',
+          isSold: false,
+          isLiked: false,
+          isOwned: false
+        },
+        {
+          id: 3,
+          backendId: 2,
+          title: 'Carbon Credit Marketplace',
+          description: 'Blockchain-based platform for trading verified carbon credits with transparent tracking and impact verification.',
+          creator: '0x9876543210abcdef1234567890abcdef12345678',
+          avatar: '🌱',
+          price: '120.00 USDC',
+          likes: 42,
+          views: 789,
+          isLocked: false,
+          category: 'Sustainability',
+          tags: ['Sustainability', 'Environment', 'Trading'],
+          categories: ['Sustainability'],
+          createdAt: '2 days ago',
+          featured: false,
+          pixelColor: 'from-emerald-400 to-teal-500',
+          isSold: false,
+          isLiked: false,
+          isOwned: false
         }
       ];
       

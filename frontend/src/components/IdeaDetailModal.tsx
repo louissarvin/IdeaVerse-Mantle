@@ -7,10 +7,12 @@ import IdeaContentModal from './IdeaContentModal';
 
 interface Idea {
   id: number;
+  ideaId?: number; // Blockchain idea ID for smart contract calls
   backendId?: number;
   title: string;
   description: string;
   creator: string;
+  creatorName?: string; // Superhero name for display
   avatar: string;
   price: string;
   likes: number;
@@ -24,6 +26,7 @@ interface Idea {
   pixelColor: string;
   isLiked?: boolean;
   isOwned?: boolean;
+  isSold?: boolean;
   attachments?: string[];
 }
 
@@ -53,7 +56,8 @@ const IdeaDetailModal: React.FC<IdeaDetailModalProps> = ({ idea, isOpen, onClose
       showInfo('Processing Purchase', 'Checking wallet balance and initiating purchase...');
       
       try {
-        await purchaseIdea(idea.id);
+        // Use ideaId (blockchain ID) instead of id (database ID) for the smart contract
+        await purchaseIdea(Number(idea.ideaId));
         // If we get here without error, show success toast
         showSuccess(
           'Purchase Successful!', 
@@ -85,7 +89,7 @@ const IdeaDetailModal: React.FC<IdeaDetailModalProps> = ({ idea, isOpen, onClose
                 {idea.title}
               </h2>
               <p className="font-orbitron text-pixel-sm text-white/80 uppercase tracking-wide">
-                by {idea.creator}
+                by {idea.creatorName || idea.creator}
               </p>
             </div>
           </div>
@@ -152,7 +156,7 @@ const IdeaDetailModal: React.FC<IdeaDetailModalProps> = ({ idea, isOpen, onClose
                     )}
                   </div>
                   <div>
-                    <div className="font-pixel font-bold text-pixel-sm text-gray-800 uppercase tracking-wider">{idea.creator}</div>
+                    <div className="font-pixel font-bold text-pixel-sm text-gray-800 uppercase tracking-wider">{idea.creatorName || idea.creator}</div>
                     <div className="font-orbitron text-pixel-xs text-gray-600 uppercase tracking-wide">Verified Creator</div>
                     <div className="flex items-center space-x-2 mt-1">
                       <Star className="w-3 h-3 text-yellow-500" />

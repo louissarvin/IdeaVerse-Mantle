@@ -205,7 +205,7 @@ export class Web3Service {
     try {
       // This would call the SuperheroNFT contract to check if the address has a superhero NFT
       // For now, we'll use the backend API
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002'}/superheroes/address/${address}`);
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'}/superheroes/address/${address}`);
       const data = await response.json();
       return data.success && data.data !== null;
     } catch (error) {
